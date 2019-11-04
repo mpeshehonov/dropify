@@ -198,22 +198,28 @@ Dropify.prototype.readFile = function(input)
         this.checkFileSize();
 		this.isFileExtensionAllowed();
 
-        if (this.isImage() && this.file.size < this.sizeToByte(this.settings.maxFileSizePreview)) {
-            this.input.on('dropify.fileReady', this.onFileReady);
+        if (this.isImage()) {
             reader.readAsDataURL(file);
-            reader.onload = function(_file) {
+
+            reader.onload = function (_file) {
                 srcBase64 = _file.target.result;
+
                 image.src = _file.target.result;
-                image.onload = function() {
+                image.onload = function () {
                     _this.setFileDimensions(this.width, this.height);
                     _this.validateImage();
-                    _this.input.trigger(eventFileReady, [true, srcBase64]);
+                    _this.input.trigger(eventFileReady, [srcBase64]);
                 };
-
             }.bind(this);
+
         } else {
-            this.onFileReady(false);
+            reader.readAsText(file);
+
+            reader.onload = function (_file) {
+                this.input.trigger(eventFileReady, _file.target.result);
+            }.bind(this);
         }
+        this.input.on('dropify.fileReady', this.onFileReady);
     }
 };
 
